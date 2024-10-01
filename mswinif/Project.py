@@ -1,13 +1,15 @@
 import os
 from mswinif.utils import list_files
 from mswinif.parsers.winevtx import *
+from mswinif.parsers.active_directory.NtdsDitParser import NtdsDitParser
+from mswinif.parsers.active_directory.AdaptedSecretsDump import AdaptedSecretsDump
 from mswinif.csv_logger.SQLiteDBFastLogger import SQLiteDBFastLogger
 from mswinif.csv_logger.Database import Database
+from mswinif.PendingFiles import PendingFiles
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
-
-def print_tasks(tasks:dict):
+def print_tasks(tasks: dict):
     for key in tasks:
         cls_name = key.__class__.__name__
         task_name = key.name
@@ -15,28 +17,37 @@ def print_tasks(tasks:dict):
         print(f"Parser {cls_name} has {qtd_files} to process and will save data to {task_name}")
 
 
-def worker(parser, files, db_fast_logger:SQLiteDBFastLogger):
+def worker(parser, files, db_fast_logger: SQLiteDBFastLogger):
     cls_name = parser.__class__.__name__
     tbl_name = parser.name
     qtd_items = 0
-    header = None
+    all_collected_items = []
     for file in files:
         collected_items = parser.process(file)
-        if len(collected_items) > 0:
-            if header is None:
-                header = [key for key in collected_items[0]]
-                db_fast_logger.add_logger(tbl_name, header)
-            for item in collected_items:
-                values = [item[key] for key in item]
-                db_fast_logger.log_data(tbl_name, values)
-        qtd_items = qtd_items + len(collected_items)
+        all_collected_items = all_collected_items + collected_items
+    if len(all_collected_items) > 0:
+        header = set()
+        for item in all_collected_items:
+            for key in item:
+                header.add(key)
+        header = sorted(header, key=str.lower)
+        db_fast_logger.add_logger(tbl_name, header)
+        for item in all_collected_items:
+            values = []
+            for h in header:
+                values.append(item[h] if h in item else "")
+            assert len(header) == len(values)
+            db_fast_logger.log_data(tbl_name, values)
+
     return f"{cls_name} processed {qtd_items} that were saved to {tbl_name}"
 
 
 class Project:
-    def __init__(self, input_dir, output_dir):
+    def __init__(self, input_dir, output_dir, tools_dir, tmp_dir):
         self.input_dir = input_dir
         self.output_dir = output_dir
+        self.tools_dir = tools_dir
+        self.tmp_dir = tmp_dir
         self.parsers = []
         self.parsers.append(KasperskyEndpointParser())
         self.parsers.append(PowerShellParser())
@@ -47,6 +58,16 @@ class Project:
         self.parsers.append(TSRDPClientParser())
         self.parsers.append(TSRemoteConnectionManagerParser())
         self.parsers.append(WindowsDefenderParser())
+        #self.parsers.append(NtdsDitParser())
+        self.parsers.append(AdaptedSecretsDump())
+        self.pending_files = PendingFiles()
+        self._configure_parsers()
+
+
+    def _configure_parsers(self):
+        for parser in self.parsers:
+            parser.configure(tmp_dir=self.tmp_dir, output_dir=self.output_dir, input_dir=self.input_dir,
+                             tools_dir=self.tools_dir, pending_files=self.pending_files)
 
     def process(self):
         collected_files = list_files(self.input_dir)
@@ -54,7 +75,7 @@ class Project:
         tasks = dict()
         for file in collected_files:
             for parser in self.parsers:
-                if parser.can_handle(file) or parser.can_handle(os.path.basename(file)):
+                if parser.can_handle(file):
                     files_by_parser = []
                     if parser in tasks:
                         files_by_parser = tasks[parser]

@@ -35,7 +35,7 @@ class CSVToSQLite:
 
         output_string = ','.join(column_names)
         sql = "CREATE TABLE IF NOT EXISTS "+table_name+" ("+output_string+")"
-        #print(sql)
+        # print(sql)
         con = sqlite3.connect(self.db_file_path)
         cur = con.cursor()
         cur.execute(sql)

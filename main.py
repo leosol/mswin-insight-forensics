@@ -30,11 +30,17 @@ def parse_args():
                         default="input",
                         help="The input dir with extracted files")
     parser.add_argument("-o", action="store", dest="output_dir", required=False,
-                        default="output",
+                        default=".\\output",
                         help="The output dir which will have the data")
     parser.add_argument("-output", action="store", dest="output_dir", required=False,
-                        default="output",
+                        default=".\\output",
                         help="The output dir which will have the data")
+    parser.add_argument("-tmp_dir", action="store", dest="tmp_dir", required=False,
+                        default=".\\tmp",
+                        help="The temp dir which will have temp data")
+    parser.add_argument("-tools_dir", action="store", dest="tools_dir", required=False,
+                        default=".\\tools",
+                        help="The tools dir")
     options = parser.parse_args()
     return options
 
@@ -43,10 +49,13 @@ def main():
     opts = parse_args()
     input_dir = opts.input_dir
     output_dir = opts.output_dir
+    tools_dir = opts.tools_dir
+    tmp_dir = opts.tmp_dir
     force = opts.force
     if os.path.exists(output_dir):
         if force:
             destroy_dir_files(output_dir)
+            os.makedirs(output_dir)
         else:
             files = list_files(output_dir)
             if len(files) > 0:
@@ -54,7 +63,7 @@ def main():
     else:
         os.makedirs(output_dir)
     logging.basicConfig(level=logging.DEBUG if opts.debug_mode else logging.INFO)
-    project = Project(input_dir=input_dir, output_dir=output_dir)
+    project = Project(input_dir=input_dir, output_dir=output_dir, tools_dir=tools_dir, tmp_dir=tmp_dir)
     project.process()
 
 

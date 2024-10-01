@@ -3,10 +3,12 @@ import os
 
 
 class CSVLogger:
-    def __init__(self, basedir, filename):
+    def __init__(self, basedir, filename, remove_existing=False):
         self.basedir = basedir
         self.filename = filename
         self.file_path = os.path.join(basedir, filename)
+        if remove_existing and os.path.exists(self.file_path):
+            os.remove(self.file_path)
         self.is_open = False
         self.file = None
         self.csv_writer = None
