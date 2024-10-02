@@ -103,6 +103,8 @@ def parse_privilege_list(values):
 
 
 def parse_target_user_name(value: str):
+    if value is None:
+        return ""
     if value.lower().startswith("dwm"):
         return "Desktop Window Manager"
     if value.lower().startswith("umfd"):

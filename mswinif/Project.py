@@ -50,14 +50,14 @@ class Project:
         self.tools_dir = tools_dir
         self.tmp_dir = tmp_dir
         self.parsers = []
-        #self.parsers.append(KasperskyEndpointParser())
-        # self.parsers.append(PowerShellParser())
-        # self.parsers.append(RDPCoreTS())
-        # self.parsers.append(SecurityParser())
-        # self.parsers.append(SymantecEndpointProtectionParser())
-        # self.parsers.append(TSLocalSessionManagerParser())
-        # self.parsers.append(TSRDPClientParser())
-        # self.parsers.append(TSRemoteConnectionManagerParser())
+        self.parsers.append(KasperskyEndpointParser())
+        self.parsers.append(PowerShellParser())
+        self.parsers.append(RDPCoreTS())
+        self.parsers.append(SecurityParser())
+        self.parsers.append(SymantecEndpointProtectionParser())
+        self.parsers.append(TSLocalSessionManagerParser())
+        self.parsers.append(TSRDPClientParser())
+        self.parsers.append(TSRemoteConnectionManagerParser())
         self.parsers.append(WindowsDefenderParser())
         #self.parsers.append(NtdsDitParser())
         self.parsers.append(AdaptedSecretsDump())
