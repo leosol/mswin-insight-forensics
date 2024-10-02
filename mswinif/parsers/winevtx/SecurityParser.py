@@ -300,6 +300,7 @@ class SecurityParser(GenericEvtxParser):
                     data_dict[data_name] = data_item.text.strip() if data_item.text is not None else ""
             data_dict["event_id"] = event_id
             data_dict["event_summary"] = event_dict["name"]
+            data_dict["event_desc"] = event_dict["desc"]
             data_dict["event_time_utc"] = event_time_utc
             data_dict["event_record_no"] = event_record_no
             data_dict["computer"] = computer

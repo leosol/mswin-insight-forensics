@@ -38,6 +38,7 @@ def worker(parser, files, db_fast_logger: SQLiteDBFastLogger):
                 values.append(item[h] if h in item else "")
             assert len(header) == len(values)
             db_fast_logger.log_data(tbl_name, values)
+            qtd_items = qtd_items + 1
 
     return f"{cls_name} processed {qtd_items} that were saved to {tbl_name}"
 
@@ -49,14 +50,14 @@ class Project:
         self.tools_dir = tools_dir
         self.tmp_dir = tmp_dir
         self.parsers = []
-        self.parsers.append(KasperskyEndpointParser())
-        self.parsers.append(PowerShellParser())
-        self.parsers.append(RDPCoreTS())
-        self.parsers.append(SecurityParser())
-        self.parsers.append(SymantecEndpointProtectionParser())
-        self.parsers.append(TSLocalSessionManagerParser())
-        self.parsers.append(TSRDPClientParser())
-        self.parsers.append(TSRemoteConnectionManagerParser())
+        #self.parsers.append(KasperskyEndpointParser())
+        # self.parsers.append(PowerShellParser())
+        # self.parsers.append(RDPCoreTS())
+        # self.parsers.append(SecurityParser())
+        # self.parsers.append(SymantecEndpointProtectionParser())
+        # self.parsers.append(TSLocalSessionManagerParser())
+        # self.parsers.append(TSRDPClientParser())
+        # self.parsers.append(TSRemoteConnectionManagerParser())
         self.parsers.append(WindowsDefenderParser())
         #self.parsers.append(NtdsDitParser())
         self.parsers.append(AdaptedSecretsDump())
