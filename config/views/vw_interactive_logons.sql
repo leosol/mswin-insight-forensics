@@ -24,13 +24,6 @@ from windows_logon
 where LogonType_desc in ('Interactive');
 
 
-create view vw_threats_windows_defender as
-select substr(event_time_utc, 0,17) as dt_event, event_data_16 as severity_id, event_data_17, event_data_18, event_data_19, event_data_15, count(*) from windows_defender
-where event_data_14='Threat Name'
-group by 1,2,3,4,5,6
-order by 1 desc;
-
-
 create view vw_windows_defender_scans as
 select
 	event_time_utc,
@@ -140,3 +133,17 @@ select
 from windows_defender
 where event_id in ('5004', '5007')
 order by event_time_utc desc;
+
+
+create view vw_logons_elevated_tokens_analitic as
+select event_time_utc, event_id, event_summary, LogonType_desc, IpAddress, WorkstationName, LogonProcessName, ElevatedToken_desc,
+VirtualAccount_desc, PrivilegeList, PrivilegeList_desc, TargetDomainName, TargetLinkedLogonId,
+TargetLogonId, TargetUserName, TargetUserName_desc, AuthenticationPackageName, AuthenticationPackageName_desc, ImpersonationLevel
+from windows_logon
+where ElevatedToken_desc='Yes';
+
+create view vw_logons_elevated_tokens_sintetic as
+select substr(event_time_utc, 0, 12) as dt_event, event_id, event_summary, LogonType_desc as LogonType, IpAddress, WorkstationName, TargetUserName, count(*) from vw_logons_elevated_tokens
+where TargetUserName not in ('DWM-1', 'UMFD-0', 'UMFD-1')
+group by 1, 2, 3, 4, 5, 6,7
+order by 1 desc;
