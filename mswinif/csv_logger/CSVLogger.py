@@ -28,6 +28,11 @@ class CSVLogger:
         self.csv_writer.writerow(data)
         return data
 
+    def flush(self):
+        if not self.is_open:
+            raise Exception("File is closed")
+        self.file.flush()
+
     def close_log(self):
         if not self.is_open:
             raise Exception("File is closed")

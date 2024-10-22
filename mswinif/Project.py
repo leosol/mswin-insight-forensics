@@ -6,8 +6,10 @@ from mswinif.parsers.active_directory.AdaptedSecretsDump import AdaptedSecretsDu
 from mswinif.csv_logger.SQLiteDBFastLogger import SQLiteDBFastLogger
 from mswinif.csv_logger.Database import Database
 from mswinif.PendingFiles import PendingFiles
+from mswinif.parsers.windowspf.WindowsPrefetchParser import WindowsPrefetchParser
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
+from datetime import datetime
+import pytz
 
 def print_tasks(tasks: dict):
     for key in tasks:
@@ -16,7 +18,6 @@ def print_tasks(tasks: dict):
         qtd_files = len(tasks[key])
         print(f"Parser {cls_name} has {qtd_files} to process and will save data to {task_name}")
 
-
 def worker(parser, files, db_fast_logger: SQLiteDBFastLogger):
     cls_name = parser.__class__.__name__
     tbl_name = parser.name
@@ -24,6 +25,7 @@ def worker(parser, files, db_fast_logger: SQLiteDBFastLogger):
     all_collected_items = []
     for file in files:
         collected_items = parser.process(file)
+        parser.post_process(collected_items)
         all_collected_items = all_collected_items + collected_items
     if len(all_collected_items) > 0:
         header = set()
@@ -39,12 +41,14 @@ def worker(parser, files, db_fast_logger: SQLiteDBFastLogger):
             assert len(header) == len(values)
             db_fast_logger.log_data(tbl_name, values)
             qtd_items = qtd_items + 1
+        db_fast_logger.flush(tbl_name)
 
     return f"{cls_name} processed {qtd_items} that were saved to {tbl_name}"
 
 
 class Project:
-    def __init__(self, input_dir, output_dir, tools_dir, tmp_dir):
+    def __init__(self, config_dir, input_dir, output_dir, tools_dir, tmp_dir):
+        self.config_dir = config_dir
         self.input_dir = input_dir
         self.output_dir = output_dir
         self.tools_dir = tools_dir
@@ -60,6 +64,7 @@ class Project:
         self.parsers.append(TSRemoteConnectionManagerParser())
         self.parsers.append(WindowsDefenderParser())
         #self.parsers.append(NtdsDitParser())
+        self.parsers.append(WindowsPrefetchParser())
         self.parsers.append(AdaptedSecretsDump())
         self.pending_files = PendingFiles()
         self._configure_parsers()
@@ -94,7 +99,9 @@ class Project:
                 result = future.result()
                 print(result)
         db_fast_logger.consolidate_database()
+        views_sql = list_files(os.path.join(self.config_dir, 'views'))
+        for sql_file in views_sql:
+            db_fast_logger.exec_post_create(sql_file)
         db = Database(dbname=os.path.join(self.output_dir, "main.db"))
         db.create_extra_tables()
-        db.create_views()
         db.create_derived_tables()

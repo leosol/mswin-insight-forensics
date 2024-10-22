@@ -11,6 +11,10 @@ class GenericEvtxParser(GenericParser):
     def __init__(self, name):
         super().__init__(name=name)
 
+
+    def get_timestamp_property_names(self):
+        return ["event_time_utc"]
+
     def to_lxml(self, record_xml):
         return etree.fromstring(record_xml)
 

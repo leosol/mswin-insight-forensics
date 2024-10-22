@@ -92,4 +92,23 @@ class CSVToSQLite:
             self.import_csv_to_sqlite(csv_file_path, table_name, ",", True)
             self.create_indexes(column_names, table_name)
 
+    def execute_sql_file(self, sql_file_path):
+        try:
+            conn = sqlite3.connect(self.db_file_path)
+            cursor = conn.cursor()
+            with open(sql_file_path, 'r') as file:
+                sql_content = file.read()
+            sql_statements = sql_content.split(';')
+            for statement in sql_statements:
+                statement = statement.strip()
+                if statement:
+                    try:
+                        cursor.execute(statement)
+                        conn.commit()
+                    except sqlite3.Error as e:
+                        print(f"An error occurred while executing: {statement}")
+                        print(f"SQLite Error: {e}")
+            conn.close()
+        except Exception as e:
+            print(f"Failed to open SQL file or database: {e}")
 

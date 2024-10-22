@@ -41,12 +41,16 @@ def parse_args():
     parser.add_argument("-tools_dir", action="store", dest="tools_dir", required=False,
                         default=".\\tools",
                         help="The tools dir")
+    parser.add_argument("-config_dir", action="store", dest="config_dir", required=False,
+                        default=".\\config",
+                        help="The config dir")
     options = parser.parse_args()
     return options
 
 
 def main():
     opts = parse_args()
+    config_dir = opts.config_dir
     input_dir = opts.input_dir
     output_dir = opts.output_dir
     tools_dir = opts.tools_dir
@@ -63,7 +67,7 @@ def main():
     else:
         os.makedirs(output_dir)
     logging.basicConfig(level=logging.DEBUG if opts.debug_mode else logging.INFO)
-    project = Project(input_dir=input_dir, output_dir=output_dir, tools_dir=tools_dir, tmp_dir=tmp_dir)
+    project = Project(config_dir=config_dir, input_dir=input_dir, output_dir=output_dir, tools_dir=tools_dir, tmp_dir=tmp_dir)
     project.process()
 
 

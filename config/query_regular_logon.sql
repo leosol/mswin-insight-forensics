@@ -15,4 +15,7 @@ select
 	VirtualAccount
 from windows_logon a
 where a.LogonType_desc in ('Interactive', 'Unlock')
-order by event_time_utc desc
+order by event_time_utc desc;
+
+
+
