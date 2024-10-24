@@ -4,12 +4,17 @@ from datetime import datetime
 import pytz
 from tzlocal import get_localzone
 
-def convert_utc_to_local(date_string):
+def convert_utc_to_local(date_obj):
     try:
-        utc_time = datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S.%f").replace(tzinfo=pytz.UTC)
-        local_timezone = get_localzone()
-        local_time = utc_time.astimezone(local_timezone)
-        return local_time.strftime("%Y-%m-%d %H:%M:%S.%f")
+        utc_time = None
+        if isinstance(date_obj, str):
+            utc_time = datetime.strptime(date_obj, "%Y-%m-%d %H:%M:%S.%f").replace(tzinfo=pytz.UTC)
+        if isinstance(date_obj, datetime):
+            utc_time = date_obj.replace(tzinfo=pytz.UTC)
+        if utc_time is not None:
+            local_timezone = get_localzone()
+            local_time = utc_time.astimezone(local_timezone)
+            return local_time.strftime("%Y-%m-%d %H:%M:%S.%f")
     except:
         return None
 

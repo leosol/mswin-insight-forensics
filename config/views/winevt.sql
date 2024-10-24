@@ -12,6 +12,7 @@ create view vw_interactive_logons as
 select
 event_record_no,
 event_time_utc,
+event_time_utc_local_tz,
 event_id,
 event_summary,
 computer,
@@ -37,6 +38,7 @@ where LogonType_desc in ('Interactive');
 create view vw_windows_defender_scans as
 select
 	event_time_utc,
+	event_time_utc_local_tz,
 	event_id,
 	event_summary,
 	event_desc
@@ -57,6 +59,7 @@ order by event_time_utc desc;
 create view vw_windows_defender_service as
 select
 	event_time_utc,
+	event_time_utc_local_tz,
 	event_id,
 	event_summary,
 	event_desc
@@ -87,6 +90,7 @@ order by event_time_utc desc;
 create view vw_windows_defender_threat_actions as
 select
 	event_time_utc,
+	event_time_utc_local_tz,
 	event_id,
 	event_summary,
 	event_desc
@@ -128,6 +132,7 @@ order by event_time_utc desc;
 create view vw_windows_defender_powershell_events as
 select
 	event_time_utc,
+	event_time_utc_local_tz,
 	event_id,
 	event_summary,
 	event_desc
@@ -146,14 +151,14 @@ order by event_time_utc desc;
 
 
 create view vw_logons_elevated_tokens_analytic as
-select event_time_utc, event_id, event_summary, LogonType_desc, IpAddress, WorkstationName, LogonProcessName, ElevatedToken_desc,
+select event_time_utc, event_time_utc_local_tz, event_id, event_summary, LogonType_desc, IpAddress, WorkstationName, LogonProcessName, ElevatedToken_desc,
 VirtualAccount_desc, PrivilegeList, PrivilegeList_desc, TargetDomainName, TargetLinkedLogonId,
 TargetLogonId, TargetUserName, TargetUserName_desc, AuthenticationPackageName, AuthenticationPackageName_desc, ImpersonationLevel
 from windows_logon
 where ElevatedToken_desc='Yes';
 
 create view vw_logons_elevated_tokens_quantitative as
-select substr(event_time_utc, 0, 12) as dt_event, event_id, event_summary, LogonType_desc as LogonType, IpAddress, WorkstationName, TargetUserName, count(*) from vw_logons_elevated_tokens
+select substr(event_time_utc, 0, 12) as dt_event_utc, event_id, event_summary, LogonType_desc as LogonType, IpAddress, WorkstationName, TargetUserName, count(*) from vw_logons_elevated_tokens
 where TargetUserName not in ('DWM-1', 'UMFD-0', 'UMFD-1')
 group by 1, 2, 3, 4, 5, 6,7
 order by 1 desc;
@@ -162,7 +167,7 @@ order by 1 desc;
 create view if not exists vw_summary_received_tcp_udp_connections
                 as
                 select
-                    substr(event_time_utc, 0, 11) as dt_event,
+                    substr(event_time_utc, 0, 11) as dt_event_utc,
                     event_summary,
                     computer,
                     conn_type,
@@ -174,7 +179,7 @@ create view if not exists vw_summary_received_tcp_udp_connections
 
 create view if not exists vw_summary_received_rdp_logon_logoff_and_gui_info as
             select
-                substr(event_time_utc, 0, 11) as dt_event,
+                substr(event_time_utc, 0, 11) as dt_event_utc,
                 event_summary,
                 computer,
                 provider,
@@ -188,7 +193,7 @@ create view if not exists vw_summary_received_rdp_logon_logoff_and_gui_info as
 
 create view if not exists vw_summary_made_rdp_outgoing as
             select
-                substr(event_time_utc, 0, 11) as dt_event,
+                substr(event_time_utc, 0, 11) as dt_event_utc,
                 event_summary,
                 computer,
                 provider,
@@ -202,7 +207,7 @@ create view if not exists vw_summary_made_rdp_outgoing as
 
 create view if not exists vw_summary_windows_received_rdp_logon as
             select
-                substr(event_time_utc, 0, 11) as dt_event,
+                substr(event_time_utc, 0, 11) as dt_event_utc,
                 event_summary,
                 computer,
                 param1_user,
@@ -216,7 +221,7 @@ create view if not exists vw_summary_windows_received_rdp_logon as
 
 create view if not exists vw_summary_kaspersky_endpoint_events as
             select
-                substr(event_time_utc, 0, 11) as dt_event,
+                substr(event_time_utc, 0, 11) as dt_event_utc,
                 event_summary,
                 computer,
                 count(*) as qtd
@@ -227,7 +232,7 @@ create view if not exists vw_summary_kaspersky_endpoint_events as
 
 create view if not exists vw_summary_symantec_endpoint_events as
                     select
-                        substr(event_time_utc, 0, 11) as dt_event,
+                        substr(event_time_utc, 0, 11) as dt_event_utc,
                         event_summary,
                         computer,
                         count(*) as qtd
@@ -239,7 +244,7 @@ create view if not exists vw_summary_symantec_endpoint_events as
 create view if not exists vw_summary_powershell_web_access
                 as
                 select
-                    substr(event_time_utc, 0, 11) as dt_event,
+                    substr(event_time_utc, 0, 11) as dt_event_utc,
                     event_id,
                     event_summary,
                     computer,
