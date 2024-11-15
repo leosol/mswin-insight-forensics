@@ -216,7 +216,7 @@ create view if not exists vw_summary_windows_received_rdp_logon as
                 count(*) as qtd
             from windows_received_rdp_logon
             group by 1,2,3,4,5,6
-            order by dt_event desc;
+            order by dt_event_utc confi  desc;
 
 
 create view if not exists vw_summary_kaspersky_endpoint_events as

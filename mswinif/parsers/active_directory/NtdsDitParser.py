@@ -12,6 +12,8 @@ class NtdsDitParser(GenericParser):
     def can_handle(self, file):
         if "ntds.dit.edb" in file.strip().lower():
             return True
+        if "ntds.dit" in file.strip().lower():
+            return True
         return False
 
     def process(self, file):

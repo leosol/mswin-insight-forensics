@@ -43,6 +43,8 @@ class AdaptedSecretsDump(GenericParser):
             self.system_hive_pointer = file
         if "ntds.dit.edb" in file.strip().lower():
             return True
+        if "ntds.dit" in file.strip().lower():
+            return True
         return False
 
     def process(self, file):
